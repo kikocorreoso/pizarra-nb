@@ -1,0 +1,6 @@
+Type: Jupyter Notebook Extension
+Name: Pizarra
+Description: Adds a button to add draw tools on the selected markdown or code cell
+Link: Readme.md
+Main: main.js
+Compatibility: 5.x
