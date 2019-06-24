@@ -7,27 +7,42 @@
 */
 
 define([
-    'base/js/namespace'
+    'base/js/namespace',
+    'base/js/dialog'
 ], function (
-    Jupyter
+    Jupyter,
+    Dialog
 ) {
     "use strict";
 
-    var initialize = function () {
+    var initialize = function() {
         Jupyter.toolbar.add_buttons_group([
-            Jupyter.keyboard_manager.actions.register ({
-                help   : 'Start draw tools',
-                icon   : 'fa-paint-brush',
-                handler: handler
-            }, 'draw-on-notebook', 'pizarra_nb')
-        ]);
+            Jupyter.keyboard_manager.actions.register(
+                {
+                    help   : 'Open Pizarra and draw tools',
+                    icon   : 'fa-paint-brush',
+                    handler: handler
+                }, 
+                'draw-on-notebook', 
+                'pizarra-nb'
+            )
+        ])
     };
     
-    var create_svg(html) {
+    var create_svg = function(html) {
         return undefined;
     };
 
     var handler = function() {
+        Dialog.modal({
+            title: 'Hello world',
+            body: '<h1>Hi</h1>, lorem ipsum and such',
+            buttons: {
+                'kthxbye': {}
+            },
+            sanitize: false
+        })
+        /*
         var cell = Jupyter.notebook.get_selected_cell();
         cell.execute();
         
@@ -44,6 +59,7 @@ define([
         } else {
             alert("Pizarra only works on markdown and code cells...")
         }
+        */
     };
 
     function load_jupyter_extension () {
