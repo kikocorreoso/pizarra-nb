@@ -9,13 +9,16 @@
 define([
     'jquery',
     'base/js/namespace',
-    'base/js/dialog'
+    'base/js/dialog',
+    './html2canvas'
 ], function (
     $,
     Jupyter,
-    Dialog
+    Dialog,
+    h2c
 ) {
     "use strict";
+    var modal_width;
 
     var initialize = function() {
         Jupyter.toolbar.add_buttons_group([
@@ -31,7 +34,7 @@ define([
         ])
     };
     
-    var create_svg = function(html) {
+    /*var create_svg = function(html) {
         return undefined;
     };
 
@@ -96,8 +99,45 @@ define([
             buttons: {
                 'Close': {}
             },
-            //sanitize: false
+            sanitize: false
         })
+    };*/
+    
+    var get_html = function() {
+        var cell = Jupyter.notebook.get_selected_cell();
+        var w = cell.element.width();
+        var h = cell.element.height();
+        var element = document.getElementsByClassName("selected")[0];
+        var header = "Pizarra-nb";
+
+        return {header: header, 
+                element: element,
+                width: w,
+                height: h};
+    };
+    
+    var convert2canvas = function() {
+        // get current cell data
+        
+        var result = get_html();
+        var canvas = document.createElement('canvas');
+        var options = {width: result.width, height: result.height};
+        h2c(result.element, options).then(canvas => {
+            var modal = Dialog.modal({
+                title: "Pizarra-nb",
+                body: canvas,
+                buttons: {
+                    'Close': {}
+                },
+                //sanitize: false
+            });
+            modal.children().width(result.width + 40)
+        });
+        return canvas;
+    };
+    
+    var handler = function() {
+        convert2canvas();
     };
 
     function load_jupyter_extension () {
