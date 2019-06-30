@@ -1,0 +1,2 @@
+jupyter nbextension install pizarra-nb --user
+jupyter nbextension enable pizarra-nb/pizarra
