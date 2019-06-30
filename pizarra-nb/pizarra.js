@@ -10,12 +10,14 @@ define([
     'jquery',
     'base/js/namespace',
     'base/js/dialog',
-    './html2canvas'
+    './html2canvas',
+    './sketchpad'
 ], function (
     $,
     Jupyter,
     Dialog,
-    h2c
+    h2c,
+    sp
 ) {
     "use strict";
     var modal_width;
@@ -34,75 +36,6 @@ define([
         ])
     };
     
-    /*var create_svg = function(html) {
-        return undefined;
-    };
-
-    var get_html = function() {
-        var cell = Jupyter.notebook.get_selected_cell();
-        //cell.execute(); // Do not execute code. It should be done by the user
-        
-        var html_text;
-        var header;
-        
-        if (cell.cell_type === "markdown") {
-            header = "Pizarra-nb";
-            html_text = cell.get_rendered();
-        } else if (cell.cell_type === "code") {
-            try {
-                var element = cell.element.find(".output_subarea").get()[0];
-                header = "Pizarra-nb";
-                html_text = element.innerHTML;
-            } catch(error) {
-                header = "Pizarra-nb - ERROR!!!";
-                html_text = "<p>It seems there is no output to show.</p>"
-                html_text += "<p>Have you run the code cell?</p>"                
-            }
-        } else {
-            header = "Pizarra-nb - ONLY MARKDOWN AND CODE CELLS ARE VALID!!!"
-            html_text = "Pizarra only works on markdown and code cells...";
-        };
-        return [header, html_text];
-    };
-    
-    var convert_to_canvas = function(html) {
-        var canvas = document.createElement('canvas');
-        canvas.width = 800;
-        canvas.height = 400;
-        var ctx = canvas.getContext('2d'); 
-        var data = '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400">' +
-                   '<foreignObject width="100%" height="100%">' +
-                   '<div xmlns="http://www.w3.org/1999/xhtml">' +
-                   html +
-                   '</div>' +
-                   '</foreignObject>' +
-                   '</svg>';
-        console.log(data);
-        var DOMURL = window.URL || window.webkitURL || window;
-        var img = new Image();
-        var svg = new Blob([data], {type: 'image/svg+xml;charset=utf-8'});
-        var url = DOMURL.createObjectURL(svg);
-        img.onload = function () {
-          ctx.drawImage(img, 0, 0);
-          DOMURL.revokeObjectURL(url);
-        }
-        img.src = url;
-        return canvas;
-    };
-    
-    var handler = function() {
-        var result = get_html();
-        var canvas = convert_to_canvas(result[1]);
-        Dialog.modal({
-            title: result[0],
-            body: canvas,
-            buttons: {
-                'Close': {}
-            },
-            sanitize: false
-        })
-    };*/
-    
     var get_html = function() {
         var cell = Jupyter.notebook.get_selected_cell();
         var w = cell.element.width();
@@ -115,17 +48,102 @@ define([
                 width: w,
                 height: h};
     };
-    
-    var convert2canvas = function() {
-        // get current cell data
-        
+
+    var create_div = function(width, height, canvas, pizarra) {
+        var div_main = document.createElement("div");
+        div_main.width = width + 2;
+        div_main.height = height + 52;
+        var div_canvas = document.createElement("div");
+        div_canvas.width = width + 1;
+        div_canvas.height = height + 1;
+        div_canvas.style = "text-align: center";
+        div_canvas.appendChild(canvas);
+        div_main.appendChild(div_canvas);
+        var div_tools = document.createElement("div");
+        div_tools.width = width + 1;
+        div_tools.height = 50 + 1;
+        div_tools.style = "text-align: center";
+        var btn = document.createElement("button");
+        btn.innerHTML = "undo";
+        btn.onclick = undo;
+        btn.style.display = "inline-block";
+        div_tools.appendChild(btn);
+        var btn = document.createElement("button");
+        btn.innerHTML = "redo";
+        btn.onclick = redo;
+        btn.style.display = "inline-block";
+        div_tools.appendChild(btn);
+        var inp = document.createElement("input");
+        inp.id = "color_picker";
+        inp.type = "color";
+        pizarra.color = "#aaaaaa";
+        inp.value = "#aaaaaa";
+        inp.addEventListener("change", color);
+        inp.style.display = "inline-block";
+        div_tools.appendChild(inp);
+        var div_range = document.createElement("div");
+        inp.style.display = "inline-block";
+        var lab = document.createElement("label");
+        lab.for = "range";
+        lab.innerHTML = "width:";
+        div_range.appendChild(lab);
+        var inp = document.createElement("input");
+        inp.id = "size_picker";
+        inp.type = "range";
+        inp.value = "5";
+        inp.min = "1";
+        inp.max = "50";
+        inp.style.background = "#555555";
+        inp.style.width = "100px";
+        inp.style.display = "inline-block";
+        inp.addEventListener("change", size);
+        div_range.appendChild(inp);
+        div_tools.appendChild(div_range);
+        div_main.appendChild(div_tools);
+        function undo() {
+            pizarra.undo();
+        }
+        function redo() {
+          pizarra.redo();
+        }
+        function color(event) {
+          pizarra.color = $(event.target).val();
+        }
+        function size(event) {
+          pizarra.penSize = $(event.target).val();
+        }
+        function animateSketchpad() {
+          pizarra.animate(10);
+        }
+        return div_main;
+    };
+
+    var start_the_magic = function() {
+        // get current cell data (HTML stuff)
         var result = get_html();
-        var canvas = document.createElement('canvas');
         var options = {width: result.width, height: result.height};
+        // Here HTML is converted to canvas
         h2c(result.element, options).then(canvas => {
+            // In the promise
+
+            // Create a sketchpad with the html converted
+            var pizarra = new sp({
+                canvas: canvas,
+                width: result.width,
+                height: result.height
+            });
+
+            // Create div with canvas and tools
+            var main_div = create_div(
+                options.width,
+                options.height,
+                canvas,
+                pizarra
+            );
+
             var modal = Dialog.modal({
                 title: "Pizarra-nb",
-                body: canvas,
+                body: main_div,
                 buttons: {
                     'Close': {}
                 },
@@ -133,11 +151,10 @@ define([
             });
             modal.children().width(result.width + 40)
         });
-        return canvas;
     };
     
     var handler = function() {
-        convert2canvas();
+        start_the_magic();
     };
 
     function load_jupyter_extension () {
