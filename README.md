@@ -9,6 +9,35 @@ See an example below:
 
 ![example](imgs/in_action.gif)
 
+THIS IS TESTED ONLY IN FIREFOX WITH THE LATEST VERSION OF NOTEBOOK. USE IT
+AT YOUR OWN RISK.
+
+What is 'pizarra'?
+------------------
+
+Pizarra is the spanish word for blackboard, whiteboard, greenboard.
+
+Motivation
+----------
+
+I have to give workshops, lessons, classes,..., in some of them there isn't
+a blackboard available to explain some concepts so, why not something available
+from the notebook itself?
+
+How it works?
+-------------
+
+After clicking the toolbar button (see video above) the selected cell is
+transformed to a HTML5 canvas using html2canvas (see next section). This 
+canvas is included in a HTML div element and some functionality is added 
+with the help of a modified version of sketchpad (see next section). The 
+final result is shown in a dialog where you can interact with the converted
+cell.
+
+I've tested images, latex formulas, code cells, markdown cells,... If it is
+in the notebook it seems is working. If you use, for instance, an image 
+from other server it will not work.
+
 Third party libs used
 ---------------------
 
