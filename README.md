@@ -1,6 +1,8 @@
 Pizarra-nb
 ==========
 
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/kikocorreoso/pizarra-nb/master)
+
 This is a Jupyter notebook extension that creates a canvas of a cell and allows
 to paint onto the contents so it could be used to explain some concepts in an
 interactiva way without the need to use a blackboard.
