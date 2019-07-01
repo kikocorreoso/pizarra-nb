@@ -5,7 +5,7 @@ Pizarra-nb
 
 This is a Jupyter notebook extension that creates a canvas of a cell and allows
 to paint onto the contents so it could be used to explain some concepts in an
-interactiva way without the need to use a blackboard.
+interactive way without the need to use a blackboard.
 
 See an example below:
 
