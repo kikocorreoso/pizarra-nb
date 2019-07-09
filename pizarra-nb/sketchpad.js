@@ -305,5 +305,4 @@ return class Sketchpad {
   }
 }
 });
-//window.Sketchpad = Sketchpad;
-//module.exports = Sketchpad;
+
