@@ -160,6 +160,15 @@ define([
                 input.value = "#aaaaaa";
                 input.addEventListener("change", color);
                 div_tools.appendChild(input);
+                // link button to save to png (included in div_tools)
+                var link = document.createElement('a');
+                link.innerHTML = 'save as png';
+                link.classList.add("btn");
+                link.classList.add("btn-default");
+                link.role = "button";
+                link.onclick = save_png;
+                link.download = "cell_result.png";
+                div_tools.appendChild(link);
 
         function undo() {
             pizarra.undo();
@@ -176,10 +185,16 @@ define([
         function transparency(event) {
           pizarra.alpha = $(event.target).val();
         };
+        function save_png(event) {
+            $(event.target).attr("href", pizarra.toPNG());
+        };
+        /*
         function animateSketchpad() {
           pizarra.animate(10);
         };
+        */
         return div_main;
+
     };
 
     var start_the_magic = function() {
