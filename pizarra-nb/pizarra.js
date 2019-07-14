@@ -49,72 +49,136 @@ define([
                 height: h};
     };
 
+    // adapted from https://stackoverflow.com/a/21648508
+    var hexToRgbA = function(hex, alpha){
+        var c;
+        if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){
+            c= hex.substring(1).split('');
+            if(c.length== 3){
+                c= [c[0], c[0], c[1], c[1], c[2], c[2]];
+            }
+            c= '0x'+c.join('');
+            return 'rgba('+[(c>>16)&255, (c>>8)&255, c&255, alpha].join(',')+')';
+        }
+        throw new Error('Bad Hex');
+    };
+
     var create_div = function(width, height, canvas, pizarra) {
+        // Main div to be included in the modal.
+        // The div contains an area for the canvas and an area for the controls
         var div_main = document.createElement("div");
         div_main.width = width + 2;
         div_main.height = height + 52;
-        var div_canvas = document.createElement("div");
-        div_canvas.width = width + 1;
-        div_canvas.height = height + 1;
-        div_canvas.style = "text-align: center";
-        div_canvas.appendChild(canvas);
-        div_main.appendChild(div_canvas);
-        var div_tools = document.createElement("div");
-        div_tools.width = width + 1;
-        div_tools.height = 50 + 1;
-        div_tools.style = "text-align: center";
-        var btn = document.createElement("button");
-        btn.innerHTML = "undo";
-        btn.onclick = undo;
-        btn.style.display = "inline-block";
-        div_tools.appendChild(btn);
-        var btn = document.createElement("button");
-        btn.innerHTML = "redo";
-        btn.onclick = redo;
-        btn.style.display = "inline-block";
-        div_tools.appendChild(btn);
-        var inp = document.createElement("input");
-        inp.id = "color_picker";
-        inp.type = "color";
-        pizarra.color = "#aaaaaa";
-        inp.value = "#aaaaaa";
-        inp.addEventListener("change", color);
-        inp.style.display = "inline-block";
-        div_tools.appendChild(inp);
-        var div_range = document.createElement("div");
-        inp.style.display = "inline-block";
-        var lab = document.createElement("label");
-        lab.for = "range";
-        lab.innerHTML = "width:";
-        div_range.appendChild(lab);
-        var inp = document.createElement("input");
-        inp.id = "size_picker";
-        inp.type = "range";
-        inp.value = "5";
-        inp.min = "1";
-        inp.max = "50";
-        inp.style.background = "#555555";
-        inp.style.width = "100px";
-        inp.style.display = "inline-block";
-        inp.addEventListener("change", size);
-        div_range.appendChild(inp);
-        div_tools.appendChild(div_range);
-        div_main.appendChild(div_tools);
+            // div containing the html transformed to canvas using html2canvas
+            var div_canvas = document.createElement("div");
+            div_canvas.width = width + 1;
+            div_canvas.height = height + 1;
+            div_canvas.style = "text-align: center";
+            div_canvas.appendChild(canvas);
+            div_main.appendChild(div_canvas);
+            // div containing the controls to draw on the canvas
+            var div_tools = document.createElement("div");
+            div_tools.classList.add("form-inline");
+            div_main.appendChild(div_tools);
+                // Button to undo an action (included in div_tools)
+                var btn = document.createElement("button");
+                btn.innerHTML = "undo";
+                btn.onclick = undo;
+                btn.classList.add("btn");
+                btn.classList.add("btn-default");
+                div_tools.appendChild(btn);
+                // Button to redo an action (included in div_tools)
+                var btn = document.createElement("button");
+                btn.innerHTML = "redo";
+                btn.onclick = redo;
+                btn.classList.add("btn");
+                btn.classList.add("btn-default");
+                div_tools.appendChild(btn);
+                // select element to choose the tool to be used to paint (included in div_tools)
+                var slt = document.createElement("select");
+                slt.classList.add("span2");
+                slt.name = "category";
+                slt.style.fontFamily = "font-family: sans-serif, 'FontAwesome'";
+                var slt_options = {
+                    "brush": "&#xf1fc; Brush",
+                    "rectangle": "&#xf096; Rectangle",
+                    "circle": "&#xf1db; Circle",
+                    "arrow": "&#xf178; Arrow",
+                    "arrows": "&#xf07e; Arrows",
+                };
+                for (var opt in slt_options){
+                    var option = document.createElement('option');
+                    option.value = opt;
+                    option.innerHTML = slt_options[opt];
+                    slt.appendChild(option);
+                };
+                slt.disabled = "disabled"; ///// At this moment this control is disabled as only the brush/pen is available
+                div_tools.appendChild(slt);
+                // label and input range for pen/text width/size (included in div_tools)
+                var lab = document.createElement("label");
+                lab.for = "width-range";
+                lab.innerHTML = "Width:";
+                div_tools.appendChild(lab);
+                var div = document.createElement("div");
+                div.classList.add("form-group");
+                div.style.border = "1px solid #888";
+                    var input = document.createElement("input");
+                    input.type = "range";
+                    input.classList.add("form-control");
+                    input.id = "width-range";
+                    input.style.width = "100px";
+                    input.value = "5";
+                    input.min = "1";
+                    input.max = "50";
+                    input.addEventListener("change", size);
+                    div.appendChild(input);
+                div_tools.appendChild(div);
+                // label and input range for pen transparency (included in div_tools)
+                var lab = document.createElement("label");
+                lab.for = "alpha-range";
+                lab.innerHTML = "Alpha:";
+                div_tools.appendChild(lab);
+                var div = document.createElement("div");
+                div.classList.add("form-group");
+                div.style.border = "1px solid #888";
+                    var input = document.createElement("input");
+                    input.type = "range";
+                    input.classList.add("form-control");
+                    input.id = "alpha-range";
+                    input.style.width = "100px";
+                    input.value = "1";
+                    input.min = "0";
+                    input.max = "1";
+                    input.step = "0.05";
+                    input.addEventListener("change", transparency);
+                    div.appendChild(input);
+                div_tools.appendChild(div);
+                // input color to get a the color to draw (included in div_tools)
+                var input = document.createElement("input");
+                input.id = "color_picker";
+                input.type = "color";
+                input.value = "#aaaaaa";
+                input.addEventListener("change", color);
+                div_tools.appendChild(input);
+
         function undo() {
             pizarra.undo();
-        }
+        };
         function redo() {
           pizarra.redo();
-        }
+        };
         function color(event) {
           pizarra.color = $(event.target).val();
-        }
+        };
         function size(event) {
           pizarra.penSize = $(event.target).val();
-        }
+        };
+        function transparency(event) {
+          pizarra.alpha = $(event.target).val();
+        };
         function animateSketchpad() {
           pizarra.animate(10);
-        }
+        };
         return div_main;
     };
 

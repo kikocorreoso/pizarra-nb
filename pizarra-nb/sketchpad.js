@@ -14,9 +14,9 @@ return class Sketchpad {
 
     this.canvas = options.canvas;
 
-    // Try to extract 'width', 'height', 'color', 'penSize' and 'readOnly'
+    // Try to extract 'width', 'height', 'color', 'penSize' and 'alpha'
     // from the options or the DOM element.
-    ['width', 'height', 'color', 'penSize', 'readOnly'].forEach(function(attr) {
+    ['width', 'height', 'color', 'penSize', 'alpha', 'readOnly'].forEach(function(attr) {
       this[attr] = options[attr] || this.canvas.getAttribute('data-' + attr);
     }, this);
 
@@ -24,8 +24,9 @@ return class Sketchpad {
     this.width = this.width || 0;
     this.height = this.height || 0;
 
-    this.color = this.color || '#000';
+    this.color = this.color || '#aaa';
     this.penSize = this.penSize || 5;
+    this.alpha = this.alpha || 1;
 
     this.readOnly = this.readOnly || false;
 
@@ -51,7 +52,7 @@ return class Sketchpad {
       // Add DOM Event Listeners
       this.canvas.addEventListener(lower, (...args) => this.trigger(lower, args));
     }, this);
-    this._bg = this.canvas.getContext('2d').getImageData(0, 0, this.width, this.height);; /////////////////////////////////////////////////////////
+    this._bg = this.canvas.getContext('2d').getImageData(0, 0, this.width, this.height);
     this.reset();
   }
 
@@ -101,6 +102,20 @@ return class Sketchpad {
     this.context.restore();
   }
 
+  // adapted from https://stackoverflow.com/a/21648508
+  _torgba(hex, alpha) {
+    var c;
+    if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+      c = hex.substring(1).split('');
+      if(c.length== 3) {
+        c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+      }
+      c = '0x'+c.join('');
+        return 'rgba('+[(c>>16)&255, (c>>8)&255, c&255, alpha].join(',')+')';
+    }
+      throw new Error('Bad Hex');
+  }
+
   /*
    * Events/Callback
    */
@@ -109,7 +124,7 @@ return class Sketchpad {
     this._sketching = true;
     this._lastPosition = this._position(event);
     this._currentStroke = {
-      color: this.color,
+      color: this._torgba(this.color, this.alpha),
       size: this.penSize,
       lines: [],
     };
@@ -132,7 +147,12 @@ return class Sketchpad {
 
   onMouseMove(event) {
     let currentPosition = this._position(event);
-    this._draw(this._lastPosition, currentPosition, this.color, this.penSize);
+    this._draw(
+      this._lastPosition,
+      currentPosition,
+      this._torgba(this.color, this.alpha),
+      this.penSize
+     );
     this._currentStroke.lines.push({
       start: this._lastPosition,
       end: currentPosition,
@@ -157,6 +177,10 @@ return class Sketchpad {
 
   toJSON() {
     return JSON.stringify(this.toObject());
+  }
+
+  toPNG() {
+    return this.canvas.toDataURL();
   }
 
   redo() {
