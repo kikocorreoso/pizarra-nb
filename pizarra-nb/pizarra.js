@@ -169,6 +169,13 @@ define([
                 link.onclick = save_png;
                 link.download = "cell_result.png";
                 div_tools.appendChild(link);
+                // button to save to cell below (included in div_tools)
+                var btn = document.createElement("button");
+                btn.innerHTML = "save to cell below";
+                btn.onclick = save_cell;
+                btn.classList.add("btn");
+                btn.classList.add("btn-default");
+                div_tools.appendChild(btn);
 
         function undo() {
             pizarra.undo();
@@ -187,6 +194,13 @@ define([
         };
         function save_png(event) {
             $(event.target).attr("href", pizarra.toPNG());
+        };
+        function save_cell() {
+            var result =  pizarra.toPNG();
+            Jupyter.notebook.insert_cell_below("markdown");
+            var next_cell = Jupyter.notebook.get_next_cell();
+            next_cell.set_text('<img src="' + result + '" />');
+            next_cell.execute();
         };
         /*
         function animateSketchpad() {
