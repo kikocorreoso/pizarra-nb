@@ -43,8 +43,8 @@ How it works?
 After clicking the toolbar button (see video above) the selected cell is
 transformed to a HTML5 canvas using html2canvas (see next section). This 
 canvas is included in a HTML div element and some functionality is added 
-with the help of a modified version of sketchpad (see next section). The 
-final result is shown in a dialog where you can interact with the converted
+with the help of a modified version of sketchpad (see *Third party libs used* section).
+The final result is shown in a dialog where you can interact with the converted
 cell.
 
 I've tested images, latex formulas, code cells, markdown cells,... If it is
