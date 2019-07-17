@@ -16,7 +16,7 @@ return class Sketchpad {
 
     // Try to extract 'width', 'height', 'color', 'penSize' and 'alpha'
     // from the options or the DOM element.
-    ['width', 'height', 'color', 'penSize', 'alpha', 'readOnly'].forEach(function(attr) {
+    ['width', 'height', 'color', 'penSize', 'alpha'].forEach(function(attr) {
       this[attr] = options[attr] || this.canvas.getAttribute('data-' + attr);
     }, this);
 
@@ -27,8 +27,6 @@ return class Sketchpad {
     this.color = this.color || '#aaa';
     this.penSize = this.penSize || 5;
     this.alpha = this.alpha || 1;
-
-    this.readOnly = this.readOnly || false;
 
     // Sketchpad History settings
     this.strokes = options.strokes || [];
@@ -202,13 +200,6 @@ return class Sketchpad {
     }
   }
 
-  clear() {
-    this.strokes.push({
-      type: 'clear',
-    });
-    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-  }
-
   redraw() {
     this.strokes.forEach(function(stroke) {
       this._stroke(stroke);
@@ -223,19 +214,13 @@ return class Sketchpad {
 
     // Redraw image
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.context.putImageData(this._bg, 0, 0); ////////////////////////////////////////////////////////////////
-    this.redraw();
+    this.context.putImageData(this._bg, 0, 0);
+    this.strokes = [];
+    this.undoHistory = [];
 
-    // Remove all event listeners, this way readOnly option will be respected
-    // on the reset
-    this.internalEvents.forEach(name => this.off(name.toLowerCase()));
-
-    if (this.readOnly) {
-      return;
-    }
-
-    // Re-Attach all event listeners
+    // Attach all event listeners
     this.internalEvents.forEach(name => this.on(name.toLowerCase(), this['on' + name]));
+
   }
 
   cancelAnimation() {

@@ -176,6 +176,13 @@ define([
                 btn.classList.add("btn");
                 btn.classList.add("btn-default");
                 div_tools.appendChild(btn);
+                // button to clear the included modifications (included in div_tools)
+                var btn = document.createElement("button");
+                btn.innerHTML = "reset";
+                btn.onclick = reset;
+                btn.classList.add("btn");
+                btn.classList.add("btn-default");
+                div_tools.appendChild(btn);
 
         function undo() {
             pizarra.undo();
@@ -201,6 +208,9 @@ define([
             var next_cell = Jupyter.notebook.get_next_cell();
             next_cell.set_text('<img src="' + result + '" />');
             next_cell.execute();
+        };
+        function reset() {
+          pizarra.reset();
         };
         /*
         function animateSketchpad() {
