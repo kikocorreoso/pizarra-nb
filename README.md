@@ -36,6 +36,7 @@ You can use:
 * you can redo an action.
 * you can save the result of the cell and your drawings as a png file in your disk drive.
 * you can save the result of the cell and your drawings as an image included in a new cell below the used cell.
+* you can reset the canvas so you can start again.
 
 How it works?
 -------------
@@ -60,7 +61,7 @@ Some ideas:
 * The possibility to write text.
 * The possibility to use arrows (single arrow and double arrow).
 * The possibility to draw squares/rectangles.
-* The possibility to draw ciorcles/ellipses.
+* The possibility to draw circles/ellipses.
 * ...
 
 Third party libs used
